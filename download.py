@@ -100,8 +100,12 @@ if 'episode' in release_info:
         'http://www.addic7ed.com/srch.php?search=' + movie_title.replace(' ', '+') + '+' + release_info['episode'] +
         '&Submit=Search'
     )
-    # XXX if multiple results are present, try the first one or check names
-    # e.g. http://www.addic7ed.com/srch.php?search=fam+s01e05&Submit=Search
+    # we might have multiple results, so if so, one more click is needed
+    if search_html.find('title').text.strip().startswith('Search'):
+        print(movie_title)
+        result_link = search_html.find('a', debug=True)
+        search_html = fetch_html('http://www.addic7ed.com/' + result_link['href'])
+
     download_links = search_html.select('.buttonDownload')
     english_download_link = None
     if len(download_links) > 0:
