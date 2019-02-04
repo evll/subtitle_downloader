@@ -71,6 +71,8 @@ def fetch_html(url: str) -> BeautifulSoup:
 
 
 def check_release_info(release_info: dict, subtitle_spans: list, ignore_key_count: int):
+    """Compare source release info with release info extracted from subscene result spans
+    """
     for subtitle_span in subtitle_spans:
         entry_release_info = extract_release_info(subtitle_span.string.strip(), ignore_key_count)
         all_match = True
@@ -98,24 +100,35 @@ if 'episode' in release_info:
         'http://www.addic7ed.com/srch.php?search=' + movie_title.replace(' ', '+') + '+' + release_info['episode'] +
         '&Submit=Search'
     )
-    result_links = search_html.select('.buttonDownload')
-    if len(result_links) > 0:
-        print('Downloading ' + 'http://www.addic7ed.com' + result_links[0]['href'])
+    # XXX if multiple results are present, try the first one or check names
+    # e.g. http://www.addic7ed.com/srch.php?search=fam+s01e05&Submit=Search
+    download_links = search_html.select('.buttonDownload')
+    english_download_link = None
+    if len(download_links) > 0:
+        for download_link in download_links:
+            lang_container = download_link.parent.find_previous_sibling('td', 'language')
+            if lang_container.text.strip() == 'English':
+                english_download_link = download_link
+                break
 
-        subtitle_response = requests.get(
-            'http://www.addic7ed.com' + result_links[0]['href'],
-            headers={'referer': 'http://www.addic7ed.com'}
-        )
-        print(subtitle_response.status_code)
-        subtitle_path = './subs.srt'
-        with open(subtitle_path, 'wb') as output:
-            output.write(subtitle_response.content)
+        if english_download_link:
+            print('Downloading ' + 'http://www.addic7ed.com' + english_download_link['href'])
 
-        raise SystemExit
+            subtitle_response = requests.get(
+                'http://www.addic7ed.com' + english_download_link['href'],
+                headers={'referer': 'http://www.addic7ed.com'}
+            )
+            print(subtitle_response.status_code)
+            subtitle_path = './subs.srt'
+            with open(subtitle_path, 'wb') as output:
+                output.write(subtitle_response.content)
+
+            raise SystemExit
 
 
 search_html = fetch_html('https://subscene.com/subtitles/title?q=' + movie_title.replace(' ', '+') + '&l=')
-result_links = search_html.select('.exact + ul .title a')
+result_links = search_html.select('.exact + ul .title a')  # this might be giving too many results, having the check below in mind
+# XXX for series add a map of season number to textual representation and use it to filter the correct title
 if len(result_links) == 0:
     result_links = search_html.select('.search-result li:first-child .title a')
 for result_link in result_links:
