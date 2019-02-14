@@ -84,26 +84,20 @@ def check_release_info(release_info: dict, subtitle_spans: list, ignore_key_coun
             return subtitle_span
 
 
-directory = sys.argv[1] if len(sys.argv) == 2 else '.'
-
-movie_dir_search_result = find_movie_title_in_dir(directory)
-if movie_dir_search_result:
-    movie_title, movie_year, movie_filename = movie_dir_search_result
-else:
-    print('No movie was found in this dir')
-    raise SystemExit
-
-# if it's series, give priority to addic7ed
-release_info = extract_release_info(movie_filename)
-if 'episode' in release_info:
+def download_from_addic7ed(movie_title: str, episode: str) -> bool:
+    """returns False if no subtitles were found or True if they were found and downloaded
+    """
     search_html = fetch_html(
-        'http://www.addic7ed.com/srch.php?search=' + movie_title.replace(' ', '+') + '+' + release_info['episode'] +
+        'http://www.addic7ed.com/srch.php?search=' + movie_title.replace(' ', '+') + '+' + episode +
         '&Submit=Search'
     )
     # we might have multiple results, so if so, one more click is needed
     if search_html.find('title').text.strip().startswith('Search'):
         print(movie_title)
         result_link = search_html.find('a', debug=True)
+        if not result_link:
+            return False;
+
         search_html = fetch_html('http://www.addic7ed.com/' + result_link['href'])
 
     download_links = search_html.select('.buttonDownload')
@@ -123,12 +117,30 @@ if 'episode' in release_info:
                 headers={'referer': 'http://www.addic7ed.com'}
             )
             print(subtitle_response.status_code)
-            subtitle_path = './subs.srt'
+            subtitle_path = './' + movie_title.replace(' ', '_') + '.srt'  # XXX use a file nam without extension
             with open(subtitle_path, 'wb') as output:
                 output.write(subtitle_response.content)
 
-            raise SystemExit
+            return True;
 
+
+directory = sys.argv[1] if len(sys.argv) == 2 else '.'
+
+movie_dir_search_result = find_movie_title_in_dir(directory)
+if movie_dir_search_result:
+    movie_title, movie_year, movie_filename = movie_dir_search_result
+else:
+    print('No movie was found in this dir')
+    raise SystemExit
+
+# if it's series, give priority to addic7ed
+release_info = extract_release_info(movie_filename)
+downloaded_from_addic7ed = False;
+if 'episode' in release_info:
+    downloaded_from_addic7ed = download_from_addic7ed(movie_title, release_info['episode'])
+
+if downloaded_from_addic7ed:
+    raise SystemExit
 
 search_html = fetch_html('https://subscene.com/subtitles/title?q=' + movie_title.replace(' ', '+') + '&l=')
 result_links = search_html.select('.exact + ul .title a')  # this might be giving too many results, having the check below in mind
