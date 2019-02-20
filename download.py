@@ -148,7 +148,7 @@ result_links = search_html.select('.exact + ul .title a')  # this might be givin
 if len(result_links) == 0:
     result_links = search_html.select('.search-result li:first-child .title a')
 for result_link in result_links:
-    if movie_year is None or movie_year in result_link.string:
+    if movie_year is None or movie_year in result_link.string or str(int(movie_year) - 1) in result_link.string:
         list_html = fetch_html('https://subscene.com' + result_link['href'])
         print('Looking for ' + movie_filename)
         subtitle_spans = list_html.select('.language-filter + table .a1 span:nth-child(2)')
