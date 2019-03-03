@@ -2,6 +2,7 @@ import json
 import re
 import zipfile
 import requests
+import typing
 from bs4 import BeautifulSoup
 from pathlib import Path
 import sys
@@ -9,7 +10,7 @@ import sys
 
 def extract_release_info(filename: str, ignore_key_count: int = 0) -> dict:
     """Parse file name and return a dictionary with the following keys:
-    episode, quality, resolution, patterns
+    episode, quality, resolution, group
     If some info is not detected or is not relevant, the key will not be included.
 
     If ignoreKeyCount is provided, that amount of keys will be excluded from the return.
@@ -33,7 +34,7 @@ def extract_release_info(filename: str, ignore_key_count: int = 0) -> dict:
         'episode': episode_matches[0] if episode_matches else None,
         'quality': quality_matches[1] if quality_matches else None,
         'resolution': resolution_matches[0] if resolution_matches else None,
-        'group_matches': group_matches[1] if group_matches else None
+        'group': group_matches[1] if group_matches else None
     }.items() if value)
 
 
@@ -84,7 +85,7 @@ def check_release_info(release_info: dict, subtitle_spans: list, ignore_key_coun
             return subtitle_span
 
 
-def download_from_addic7ed(movie_title: str, episode: str) -> bool:
+def download_from_addic7ed(movie_title: str, episode: str, group: typing.Optional[str]) -> bool:
     """returns False if no subtitles were found or True if they were found and downloaded
     """
     search_html = fetch_html(
@@ -101,19 +102,30 @@ def download_from_addic7ed(movie_title: str, episode: str) -> bool:
         search_html = fetch_html('http://www.addic7ed.com/' + result_link['href'])
 
     download_links = search_html.select('.buttonDownload')
+    matching_download_link = None
     english_download_link = None
     if len(download_links) > 0:
         for download_link in download_links:
             lang_container = download_link.parent.find_previous_sibling('td', 'language')
-            if lang_container.text.strip() == 'English':
-                english_download_link = download_link
+            group_container = download_link.find_parent('table').find('tr').find('td', 'NewsTitle')
+            if lang_container.text.strip() == 'English' and \
+                    group and group_container.text.lower().find(group.lower()) != -1:
+                matching_download_link = download_link
+                print('Found group match for ' + group)
                 break
+            elif lang_container.text.strip() == 'English':
+                english_download_link = download_link
+                break;
 
-        if english_download_link:
-            print('Downloading ' + 'http://www.addic7ed.com' + english_download_link['href'])
+        if english_download_link and not matching_download_link:
+            print('No group match, taking first English match')
+            matching_download_link = english_download_link;
+
+        if matching_download_link:
+            print('Downloading ' + 'http://www.addic7ed.com' + matching_download_link['href'])
 
             subtitle_response = requests.get(
-                'http://www.addic7ed.com' + english_download_link['href'],
+                'http://www.addic7ed.com' + matching_download_link['href'],
                 headers={'referer': 'http://www.addic7ed.com'}
             )
             print(subtitle_response.status_code)
@@ -137,7 +149,7 @@ else:
 release_info = extract_release_info(movie_filename)
 downloaded_from_addic7ed = False;
 if 'episode' in release_info:
-    downloaded_from_addic7ed = download_from_addic7ed(movie_title, release_info['episode'])
+    downloaded_from_addic7ed = download_from_addic7ed(movie_title, release_info['episode'], release_info['group'])
 
 if downloaded_from_addic7ed:
     raise SystemExit
