@@ -115,10 +115,9 @@ def download_from_addic7ed(movie_title: str, episode: str, group: typing.Optiona
                 break
             elif lang_container.text.strip() == 'English':
                 english_download_link = download_link
-                break;
 
         if english_download_link and not matching_download_link:
-            print('No group match, taking first English match')
+            print(f'No group match for {group}, taking first English match')
             matching_download_link = english_download_link;
 
         if matching_download_link:
