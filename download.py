@@ -28,7 +28,8 @@ def extract_release_info(filename: str, ignore_key_count: int = 0) -> dict:
     if ignore_key_count < 2:
         resolution_matches = re.search(r'\b(' + '|'.join(resolution_patterns) + r')\b', filename, flags=re.IGNORECASE)
     if ignore_key_count < 1:
-        group_matches = re.search(r'-(\w+)$', filename)
+        filtered_filename = re.sub(r'\[.+\]', '', filename)
+        group_matches = re.search(r'-(\w+)$', filtered_filename)
 
     return dict((key, value) for key, value in {
         'episode': episode_matches[0] if episode_matches else None,
