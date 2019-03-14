@@ -46,13 +46,13 @@ def find_movie_title_in_dir(dir_path: str) -> tuple:
         """
         matches = re.match(r'(.+)(2\d{3})', filename)
         if matches:
-            return matches[1].replace('.', ' ').strip(), matches[2]
+            return matches[1].replace('.', ' ').replace('nt ', "n't ").strip(), matches[2]
 
         series_matches = re.match(r'(.+)s\d\de\d\d', filename, flags=re.IGNORECASE)
         if series_matches:
-            return series_matches[1].replace('.', ' ').strip(), None
+            return series_matches[1].replace('.', ' ').replace('nt ', "n't ").strip(), None
 
-        return filename.replace('.', ' ').strip(), None
+        return filename.replace('.', ' ').replace('nt ', "n't ").strip(), None
 
     movie_extensions = {'avi', 'mkv', 'mp4'}
     current_dir = Path(dir_path)
