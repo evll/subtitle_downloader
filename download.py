@@ -95,12 +95,15 @@ def download_from_addic7ed(movie_title: str, episode: str, group: typing.Optiona
     )
     # we might have multiple results, so if so, one more click is needed
     if search_html.find('title').text.strip().startswith('Search'):
-        print(movie_title)
-        result_link = search_html.find('a', debug=True)
-        if not result_link:
-            return False;
+        result_links = search_html.find_all('a', debug=True)
+        if not result_links:
+            return False
 
-        search_html = fetch_html('http://www.addic7ed.com/' + result_link['href'])
+        # for now we simply take first link, but if needed, look for most suitable title like below
+        # for result_link in result_links:
+        #     comparable_title = re.sub(r'\s+\-\s.+$', '', result_link.text)
+
+        search_html = fetch_html('http://www.addic7ed.com/' + result_links[0]['href'])
 
     download_links = search_html.select('.buttonDownload')
     matching_download_link = None
@@ -129,7 +132,7 @@ def download_from_addic7ed(movie_title: str, episode: str, group: typing.Optiona
                 headers={'referer': 'http://www.addic7ed.com'}
             )
             print(subtitle_response.status_code)
-            subtitle_path = './' + movie_title.replace(' ', '_') + '.srt'  # XXX use a file nam without extension
+            subtitle_path = './' + movie_title.replace(' ', '_') + '.srt'  # XXX use a file name without extension
             with open(subtitle_path, 'wb') as output:
                 output.write(subtitle_response.content)
 
@@ -147,6 +150,10 @@ else:
 
 # if it's series, give priority to addic7ed
 release_info = extract_release_info(movie_filename)
+# some series have year as a part of the title (e.g. Happy! (2017)), so concatenate them in such cases
+if release_info['episode'] and movie_year:
+    movie_title = movie_title + ' ' + movie_year
+
 downloaded_from_addic7ed = False;
 if 'episode' in release_info:
     downloaded_from_addic7ed = download_from_addic7ed(movie_title, release_info['episode'], release_info['group'])
