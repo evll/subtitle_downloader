@@ -151,7 +151,7 @@ else:
 # if it's series, give priority to addic7ed
 release_info = extract_release_info(movie_filename)
 # some series have year as a part of the title (e.g. Happy! (2017)), so concatenate them in such cases
-if release_info['episode'] and movie_year:
+if 'episode' in release_info.keys() and movie_year:
     movie_title = movie_title + ' ' + movie_year
 
 downloaded_from_addic7ed = False;
