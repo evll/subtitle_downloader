@@ -66,7 +66,19 @@ def find_movie_title_in_dir(dir_path: str) -> tuple:
 
 def fetch_html(url: str) -> BeautifulSoup:
     print('Requesting ' + url)
-    response = requests.get(url, cookies={'LanguageFilter': '13', 'HearingImpaired': '0', 'ForeignOnly': 'False'})
+    response = requests.get(
+        url,
+        cookies={
+            'LanguageFilter': '13',
+            'HearingImpaired': '0',
+            'ForeignOnly': 'False',
+            '__cfduid': "d1e731e5b7a9935b44ccb5831628069ed1543570650",
+            '_ga': "GA1.2.1215724997.1513623994",
+            'cf_clearance': "102f048a1c6d535a8f76e44907d5b8d0fa10f27d-1553880580-31536000-150",
+            'cookieconsent_dismissed': "yes"
+        },
+        headers={'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+    )
     print(response.status_code)
 
     return BeautifulSoup(response.text, features="html.parser")
@@ -161,6 +173,16 @@ if 'episode' in release_info:
 if downloaded_from_addic7ed:
     raise SystemExit
 
+if 'episode' in release_info and ' and ' in movie_title:
+    downloaded_from_addic7ed = download_from_addic7ed(
+        movie_title.replace(' and ', ' & '),
+        release_info['episode'],
+        release_info['group']
+    )
+
+if downloaded_from_addic7ed:
+    raise SystemExit
+
 search_html = fetch_html('https://subscene.com/subtitles/title?q=' + movie_title.replace(' ', '+') + '&l=')
 result_links = search_html.select('.exact + ul .title a')  # this might be giving too many results, having the check below in mind
 # XXX for series add a map of season number to textual representation and use it to filter the correct title
@@ -191,7 +213,19 @@ for result_link in result_links:
                 subtitle_html = fetch_html('https://subscene.com' + subtitle_link['href'])
                 subtitle_link = subtitle_html.select_one('#downloadButton')
                 print('Download zip from ' + 'https://subscene.com' + subtitle_link['href'])
-                subtitle_response = requests.get('https://subscene.com' + subtitle_link['href'])
+                subtitle_response = requests.get(
+                    'https://subscene.com' + subtitle_link['href'],
+                    cookies={
+                        'LanguageFilter': '13',
+                        'HearingImpaired': '0',
+                        'ForeignOnly': 'False',
+                        '__cfduid': "d1e731e5b7a9935b44ccb5831628069ed1543570650",
+                        '_ga': "GA1.2.1215724997.1513623994",
+                        'cf_clearance': "102f048a1c6d535a8f76e44907d5b8d0fa10f27d-1553880580-31536000-150",
+                        'cookieconsent_dismissed': "yes"
+                    },
+                    headers={'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+                )
                 zip_path = '/home/jevgenij/Downloads/subtitle.zip'
                 with open(zip_path, 'wb') as output:
                     output.write(subtitle_response.content)
