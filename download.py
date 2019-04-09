@@ -175,7 +175,7 @@ if downloaded_from_addic7ed:
 
 if 'episode' in release_info and ' and ' in movie_title:
     downloaded_from_addic7ed = download_from_addic7ed(
-        movie_title.replace(' and ', ' & '),
+        movie_title.replace(' and ', ' %26 '),
         release_info['episode'],
         release_info['group']
     )
