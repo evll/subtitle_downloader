@@ -16,7 +16,7 @@ def extract_release_info(filename: str, ignore_key_count: int = 0) -> dict:
     If ignoreKeyCount is provided, that amount of keys will be excluded from the return.
     This is useful for less strict comparison of titles.
     """
-    quality_patterns = {'bluray', 'bdrip', 'hdrip', 'web-dl', 'dvdscr', 'web', 'webrip'}
+    quality_patterns = {'bluray', 'bdrip', 'hdrip', 'web-dl', 'dvdscr', 'web[^\-]', 'webrip'}
     resolution_patterns = {'720p', '1080p'}
 
     episode_matches = re.search(r's\d\de\d\d', filename, flags=re.IGNORECASE)
