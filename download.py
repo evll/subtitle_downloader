@@ -91,7 +91,7 @@ def check_release_info(release_info: dict, subtitle_spans: list, ignore_key_coun
         entry_release_info = extract_release_info(subtitle_span.string.strip(), ignore_key_count)
         all_match = True
         for key, value in release_info.items():
-            if value != entry_release_info.get(key):
+            if not entry_release_info.get(key) or value.lower() != entry_release_info.get(key).lower():
                 all_match = False
                 break
         if all_match:
