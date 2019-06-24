@@ -124,8 +124,9 @@ def download_from_opensubtitles(
 
     download_links = []
     for download_row in download_rows:
-        # XXX handle situation when same quality or group are not found (regexp in priority)
         release_text = download_row.find_all(string=re.compile(quality + '.+' + group))
+        if not release_text:
+            release_text = download_row.find_all(string=re.compile(quality))
         if release_text:
             print(release_text[0])
             download_link = download_row.find('a', href=re.compile('/en/subtitleserve/sub/'))
@@ -207,7 +208,7 @@ def download_from_addic7ed(movie_title: str, episode: str, group: typing.Optiona
             with open(subtitle_path, 'wb') as output:
                 output.write(subtitle_response.content)
 
-            return True;
+            return True
 
 
 directory = sys.argv[1] if len(sys.argv) == 2 else '.'
