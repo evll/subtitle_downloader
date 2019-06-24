@@ -1,5 +1,6 @@
 import json
 import re
+import time
 import zipfile
 import requests
 import typing
@@ -98,6 +99,64 @@ def check_release_info(release_info: dict, subtitle_spans: list, ignore_key_coun
             return subtitle_span
 
 
+def download_from_opensubtitles(
+        movie_title: str,
+        quality: typing.Optional[str],
+        group: typing.Optional[str],
+        year: typing.Optional[int]
+) -> bool:
+    """returns False if no subtitles were found or True if they were found and downloaded
+    """
+    searchable_title = movie_title.replace(' ', '+');
+    if year:
+        searchable_title += '+' + year;
+    search_html = fetch_html(
+        'https://www.opensubtitles.org/en/search2?MovieName=' + searchable_title +
+        '&id=8&action=search&SubLanguageID=eng&Season=&Episode=&SubSumCD=&Genre=&MovieByteSize=&MovieLanguage=&' +
+        'MovieImdbRatingSign=1&MovieImdbRating=&MovieCountry=&MovieYearSign=1&MovieYear=&MovieFPS=&SubFormat=&' +
+        'SubAddDate=&Uploader=&IDUser=&Translator=&IMDBID=&MovieHash=&IDMovie='
+    )
+
+    download_rows = search_html.select('.change.expandable')
+
+    if len(download_rows) == 0:
+        return False
+
+    download_links = []
+    for download_row in download_rows:
+        # XXX handle situation when same quality or group are not found (regexp in priority)
+        release_text = download_row.find_all(string=re.compile(quality + '.+' + group))
+        if release_text:
+            print(release_text[0])
+            download_link = download_row.find('a', href=re.compile('/en/subtitleserve/sub/'))
+            hearing_impaired = download_row.find_all('img', title='Subtitles for hearing impaired')
+            if hearing_impaired:
+                download_links.append(download_link['href'])
+            else:
+                download_links.insert(0, download_link['href'])
+
+    if download_links:
+        print('Download zip from ' + 'https://www.opensubtitles.org' + download_links[0])
+        subtitle_response = requests.get(
+            'https://www.opensubtitles.org' + download_links[0],
+            headers={
+                'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0',
+                'referer': 'https://www.opensubtitles.org/en/subtitleserve/sub/11111'
+            }
+        )
+
+        zip_path = '/home/jevgenij/Downloads/subtitle.zip'
+        with open(zip_path, 'wb') as output:
+            output.write(subtitle_response.content)
+
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall('.')
+
+        return True
+
+    return False
+
+
 def download_from_addic7ed(movie_title: str, episode: str, group: typing.Optional[str]) -> bool:
     """returns False if no subtitles were found or True if they were found and downloaded
     """
@@ -183,13 +242,23 @@ if 'episode' in release_info and ' and ' in movie_title:
 if downloaded_from_addic7ed:
     raise SystemExit
 
-search_html = fetch_html('https://subscene.com/subtitles/title?q=' + movie_title.replace(' ', '+') + '&l=')
+downloaded_from_opensubtitles = download_from_opensubtitles(
+    movie_title,
+    release_info['quality'] if 'quality' in release_info else '',
+    release_info['group'],
+    movie_year
+)
+if downloaded_from_opensubtitles:
+    raise SystemExit
+
+search_html = fetch_html('https://subscene.com/subtitles/searching?q=' + movie_title.replace(' ', '+') + '&l=')
 result_links = search_html.select('.exact + ul .title a')  # this might be giving too many results, having the check below in mind
 # XXX for series add a map of season number to textual representation and use it to filter the correct title
 if len(result_links) == 0:
     result_links = search_html.select('.search-result li:first-child .title a')
 for result_link in result_links:
     if movie_year is None or movie_year in result_link.string or str(int(movie_year) - 1) in result_link.string:
+        time.sleep(3)
         list_html = fetch_html('https://subscene.com' + result_link['href'])
         print('Looking for ' + movie_filename)
         subtitle_spans = list_html.select('.language-filter + table .a1 span:nth-child(2)')
@@ -210,6 +279,7 @@ for result_link in result_links:
                 print('Downloading ' + subtitle_span_match.string.strip())
                 subtitle_link = subtitle_span_match.find_parent('a')
 
+                time.sleep(3)
                 subtitle_html = fetch_html('https://subscene.com' + subtitle_link['href'])
                 subtitle_link = subtitle_html.select_one('#downloadButton')
                 print('Download zip from ' + 'https://subscene.com' + subtitle_link['href'])
