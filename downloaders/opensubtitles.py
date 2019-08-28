@@ -14,25 +14,37 @@ def download(movie_info: MovieInfo) -> bool:
     if movie_info.year:
         searchable_title += '+' + str(movie_info.year)
 
+    if movie_info.episode:
+        searchable_title += '+' + movie_info.episode
+
     search_html = html_fetcher.fetch_get(
         'https://www.opensubtitles.org/en/search2?MovieName=' + searchable_title +
         '&id=8&action=search&SubLanguageID=eng&Season=&Episode=&SubSumCD=&Genre=&MovieByteSize=&MovieLanguage=&' +
         'MovieImdbRatingSign=1&MovieImdbRating=&MovieCountry=&MovieYearSign=1&MovieYear=&MovieFPS=&SubFormat=&' +
         'SubAddDate=&Uploader=&IDUser=&Translator=&IMDBID=&MovieHash=&IDMovie='
     )
-    # XXX There can be multiple movies found, in this case, take the first match,
-    #  see https://www.opensubtitles.org/en/search2/sublanguageid-eng/moviename-aladdin+2019
 
     download_rows = search_html.select('.change.expandable')
+
+    if len(download_rows) == 0 and len(search_html.select('#search_results')) == 1:
+        # multiple search results
+        if movie_info.episode:
+            # for episodes search for the episode number among the results
+            result_rows = search_html.select("#search_results .change")
+            for result_row in result_rows:
+                if movie_info.episode.lower() in result_row.text.lower():
+                    movie_page_link = result_row.find('a', href=re.compile('idmovie'))
+                    search_html = html_fetcher.fetch_get('https://www.opensubtitles.org' + movie_page_link['href'])
+                    download_rows = search_html.select('.change.expandable')
 
     if len(download_rows) == 0:
         return False
 
     download_links = []
     for download_row in download_rows:
-        release_text = download_row.find_all(string=re.compile(movie_info.quality + '.+' + movie_info.group))
+        release_text = download_row.find_all(string=re.compile(movie_info.quality + '.+' + movie_info.group, re.IGNORECASE))
         if not release_text:
-            release_text = download_row.find_all(string=re.compile(movie_info.quality))
+            release_text = download_row.find_all(string=re.compile(movie_info.quality, re.IGNORECASE))
         if release_text:
             download_link = download_row.find('a', href=re.compile('/en/subtitleserve/sub/'))
             hearing_impaired = download_row.find_all('img', title='Subtitles for hearing impaired')
