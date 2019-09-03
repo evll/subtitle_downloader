@@ -45,7 +45,7 @@ def download(movie_info: MovieInfo) -> bool:
         release_text = download_row.find_all(string=re.compile(movie_info.quality + '.+' + movie_info.group, re.IGNORECASE))
         if not release_text:
             release_text = download_row.find_all(string=re.compile(movie_info.quality, re.IGNORECASE))
-        if release_text:
+        if release_text or movie_info.episode:
             download_link = download_row.find('a', href=re.compile('/en/subtitleserve/sub/'))
             hearing_impaired = download_row.find_all('img', title='Subtitles for hearing impaired')
             if hearing_impaired:
