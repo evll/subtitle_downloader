@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -16,9 +17,13 @@ def find_movie_filename_in_dir(dir_path: str) -> str:
 
 
 directory = sys.argv[1] if len(sys.argv) == 2 else '.'
-movie_filename = find_movie_filename_in_dir(directory)
+if os.path.isfile(directory):
+    movie_filename = directory
+else:
+    movie_filename = find_movie_filename_in_dir(directory)
+
 if not movie_filename:
-    print('No movie was found in this dir')
+    print('No movie file was found')
     raise SystemExit
 
 movie_info = extract_movie_info(movie_filename)
