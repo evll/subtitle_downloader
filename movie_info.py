@@ -5,6 +5,7 @@ import typing
 
 @dataclass
 class MovieInfo:
+    filename: str
     title: str
     episode: typing.Optional[str]  # available for series only
     quality: str

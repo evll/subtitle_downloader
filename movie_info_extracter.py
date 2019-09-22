@@ -14,6 +14,7 @@ def extract_movie_info(filename: str):
     group_matches = re.search(r'-(\w+)(\.\w{3})?$', filtered_filename)
 
     return movie_info.MovieInfo(
+        filename,
         title,
         episode_matches[0] if episode_matches else None,
         quality_matches[1] if quality_matches else "",

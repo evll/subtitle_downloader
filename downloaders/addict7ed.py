@@ -1,5 +1,5 @@
+import os
 import requests
-
 import html_fetcher
 from movie_info import MovieInfo
 
@@ -56,7 +56,7 @@ def download(movie_info: MovieInfo) -> bool:
                 headers={'referer': 'http://www.addic7ed.com'}
             )
             print(subtitle_response.status_code)
-            subtitle_path = './' + movie_title.replace(' ', '_') + '.srt'
+            subtitle_path = './' + os.path.splitext(movie_info.filename)[0] + '.srt'
             with open(subtitle_path, 'wb') as output:
                 output.write(subtitle_response.content)
 
