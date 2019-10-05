@@ -3,7 +3,7 @@ import movie_info
 
 
 def extract_movie_info(filename: str):
-    quality_patterns = {'bluray', 'bdrip', 'hdrip', 'web-dl', 'dvdscr', 'web[^\-]', 'webrip'}
+    quality_patterns = {'bluray', 'bdrip', 'hdrip', 'dvdrip', 'web-dl', 'dvdscr', 'web[^\-]', 'webrip'}
     resolution_patterns = {'720p', '1080p'}
 
     (title, year) = _extract_title_year_from_filename(filename)
