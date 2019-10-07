@@ -18,10 +18,7 @@ def download(movie_info: MovieInfo) -> bool:
         searchable_title += '+' + movie_info.episode
 
     search_html = html_fetcher.fetch_get(
-        'https://www.opensubtitles.org/en/search2?MovieName=' + searchable_title +
-        '&id=8&action=search&SubLanguageID=eng&Season=&Episode=&SubSumCD=&Genre=&MovieByteSize=&MovieLanguage=&' +
-        'MovieImdbRatingSign=1&MovieImdbRating=&MovieCountry=&MovieYearSign=1&MovieYear=&MovieFPS=&SubFormat=&' +
-        'SubAddDate=&Uploader=&IDUser=&Translator=&IMDBID=&MovieHash=&IDMovie='
+        'https://www.opensubtitles.org/en/search2/sublanguageid-eng/moviename-' + searchable_title
     )
 
     download_rows = search_html.select('.change.expandable')
