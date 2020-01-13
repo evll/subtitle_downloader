@@ -30,10 +30,18 @@ def _extract_title_year_from_filename(filename: str) -> tuple:
     """
     matches = re.match(r'(.+)(2\d{3})', filename)
     if matches:
-        return matches[1].replace('.', ' ').replace('nt ', "n't ").strip(), matches[2]
+        return _add_single_quotes(matches[1].replace('.', ' ')).strip(), matches[2]
 
     series_matches = re.match(r'(.+)s\d\de\d\d', filename, flags=re.IGNORECASE)
     if series_matches:
-        return series_matches[1].replace('.', ' ').replace('nt ', "n't ").strip(), None
+        return _add_single_quotes(series_matches[1].replace('.', ' ')).strip(), None
 
-    return filename.replace('.', ' ').replace('nt ', "n't ").strip(), None
+    return _add_single_quotes(filename.replace('.', ' ')).strip(), None
+
+
+def _add_single_quotes(title: str) -> str:
+    return re.sub(
+        r'(is|are|was|were|have|has|had|do|does|did|could|should|wo|would)nt',
+        '\g<1>n\'t',
+        title
+    ).replace('cant', "can't")
