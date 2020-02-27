@@ -45,6 +45,9 @@ def download(movie_info: MovieInfo) -> bool:
         if release_text or movie_info.episode:
             download_link = download_row.find('a', href=re.compile('/en/subtitleserve/sub/'))
             hearing_impaired = download_row.find_all('img', title='Subtitles for hearing impaired')
+            foreign_parts_only = download_row.find_all('img', title='Foreign Parts Only')
+            if foreign_parts_only:
+                continue
             if hearing_impaired:
                 download_links.append(download_link['href'])
             else:
