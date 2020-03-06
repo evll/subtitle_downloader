@@ -1,3 +1,4 @@
+import os
 import time
 import zipfile
 
@@ -56,12 +57,14 @@ def download(movie: movie_info.MovieInfo):
                     },
                     headers={'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
                 )
-                zip_path = '/home/jevgenij/Downloads/subtitle.zip'
+                zip_path = './subtitle.zip'
                 with open(zip_path, 'wb') as output:
                     output.write(subtitle_response.content)
 
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall('.')
+
+                os.remove(zip_path)
 
                 return True
 

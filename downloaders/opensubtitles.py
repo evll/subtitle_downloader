@@ -1,3 +1,4 @@
+import os
 import re
 import zipfile
 
@@ -63,12 +64,14 @@ def download(movie_info: MovieInfo) -> bool:
             }
         )
 
-        zip_path = '/home/jevgenij/Downloads/subtitle.zip'
+        zip_path = './subtitle.zip'
         with open(zip_path, 'wb') as output:
             output.write(subtitle_response.content)
 
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall('.')
+
+        os.remove(zip_path)
 
         return True
 
