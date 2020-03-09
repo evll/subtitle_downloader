@@ -53,6 +53,8 @@ def download(movie_info: MovieInfo) -> bool:
                 download_links.append(download_link['href'])
             else:
                 download_links.insert(0, download_link['href'])
+        else:
+            print("Did not find a suitable release (quality) or episode")
 
     if download_links:
         print('Download zip from ' + 'https://www.opensubtitles.org' + download_links[0])
