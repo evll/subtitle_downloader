@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import zipfile
 
@@ -18,8 +19,9 @@ def download(movie: movie_info.MovieInfo):
     result_links = search_html.select('.exact + ul .title a')
     # XXX for series add a map of season number to textual representation and use it to filter the correct title
     if len(result_links) == 0:
-        result_links = search_html.select('.search-result li:first-child .title a')
+        result_links = search_html.find_all("a", text=re.compile(" \\(" + str(movie.year) + "\\)"))
 
+    print(result_links)
     for result_link in result_links:
         if movie.year is None or movie.year in result_link.string or str(int(movie.year) - 1) in result_link.string:
             time.sleep(3)
