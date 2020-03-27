@@ -21,7 +21,6 @@ def download(movie: movie_info.MovieInfo):
     if len(result_links) == 0:
         result_links = search_html.find_all("a", text=re.compile(" \\(" + str(movie.year) + "\\)"))
 
-    print(result_links)
     for result_link in result_links:
         if movie.year is None or movie.year in result_link.string or str(int(movie.year) - 1) in result_link.string:
             time.sleep(3)
