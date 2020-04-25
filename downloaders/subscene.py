@@ -15,6 +15,8 @@ def download(movie: movie_info.MovieInfo):
         'https://subscene.com/subtitles/searchbytitle',
         {'query': movie.title, 'l': ''}
     )
+    if search_html is None:
+        return False
     # this might be giving too many results, having the check below in mind
     result_links = search_html.select('.exact + ul .title a')
     # XXX for series add a map of season number to textual representation and use it to filter the correct title
@@ -25,6 +27,8 @@ def download(movie: movie_info.MovieInfo):
         if movie.year is None or movie.year in result_link.string or str(int(movie.year) - 1) in result_link.string:
             time.sleep(3)
             list_html = html_fetcher.fetch_get('https://subscene.com' + result_link['href'])
+            if list_html is None:
+                return False
             subtitle_spans = list_html.select('.language-filter + table .a1 span:nth-child(2)')
             max_similarity_span = None
             max_similarity = 0
@@ -43,6 +47,8 @@ def download(movie: movie_info.MovieInfo):
 
                 time.sleep(3)
                 subtitle_html = html_fetcher.fetch_get('https://subscene.com' + subtitle_link['href'])
+                if subtitle_html is None:
+                    return False
                 subtitle_link = subtitle_html.select_one('#downloadButton')
                 print('Download zip from ' + 'https://subscene.com' + subtitle_link['href'])
                 subtitle_response = requests.get(

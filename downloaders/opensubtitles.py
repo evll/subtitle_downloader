@@ -21,6 +21,8 @@ def download(movie_info: MovieInfo) -> bool:
     search_html = html_fetcher.fetch_get(
         'https://www.opensubtitles.org/en/search2/sublanguageid-eng/moviename-' + searchable_title
     )
+    if search_html is None:
+        return False
 
     download_rows = search_html.select('.change.expandable')
 
@@ -33,6 +35,8 @@ def download(movie_info: MovieInfo) -> bool:
                 if movie_info.episode.lower() in result_row.text.lower():
                     movie_page_link = result_row.find('a', href=re.compile('idmovie'))
                     search_html = html_fetcher.fetch_get('https://www.opensubtitles.org' + movie_page_link['href'])
+                    if search_html is None:
+                        return False
                     download_rows = search_html.select('.change.expandable')
 
     if len(download_rows) == 0:

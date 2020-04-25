@@ -5,18 +5,22 @@ from movie_info import MovieInfo
 
 
 def download(movie_info: MovieInfo) -> bool:
+    """returns False if no subtitles were found or True if they were found and downloaded
+    """
 
     movie_title = movie_info.title
     # some series have year as a part of the title (e.g. Happy! (2017)), so concatenate them in such cases
     if movie_info.year:
         movie_title = movie_title + ' ' + str(movie_info.year)
 
-    """returns False if no subtitles were found or True if they were found and downloaded
-    """
     search_html = html_fetcher.fetch_get(
         'http://www.addic7ed.com/srch.php?search=' + movie_title.replace(' ', '+') + '+' + movie_info.episode +
         '&Submit=Search'
     )
+
+    if search_html is None:
+        return False
+
     # we might have multiple results, so if so, one more click is needed
     if search_html.find('title').text.strip().startswith('Search'):
         result_links = search_html.find_all('a', debug=True)
@@ -28,6 +32,8 @@ def download(movie_info: MovieInfo) -> bool:
         #     comparable_title = re.sub(r'\s+\-\s.+$', '', result_link.text)
 
         search_html = html_fetcher.fetch_get('http://www.addic7ed.com/' + result_links[0]['href'])
+        if search_html is None:
+            return False
 
     download_links = search_html.select('.buttonDownload')
     matching_download_link = None
