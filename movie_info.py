@@ -20,7 +20,7 @@ class MovieInfo:
         if self.episode:
             weights = {"episode": 50, "quality": 30, "group": 15, "resolution": 5}
         else:
-            weights = {"quality": 70, "group": 20, "resolution": 10}
+            weights = {"quality": 70, "group": 25, "resolution": 5}
 
         similarity = 0
         if self.episode and self.episode.lower() == other_movie_info.episode.lower():
