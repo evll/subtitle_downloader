@@ -10,7 +10,7 @@ def fetch_get(url: str) -> typing.Optional[BeautifulSoup]:
     try:
         response = requests.get(
             url,
-            timeout=5,
+            timeout=10,
             cookies={
                 'LanguageFilter': '13',
                 'HearingImpaired': '0',
@@ -36,7 +36,7 @@ def fetch_post(url: str, data: dict) -> typing.Optional[BeautifulSoup]:
         response = requests.post(
             url,
             data,
-            timeout=5,
+            timeout=10,
             cookies={
                 'LanguageFilter': '13',
                 'HearingImpaired': '0',
