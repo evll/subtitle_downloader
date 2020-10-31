@@ -44,7 +44,12 @@ def download(movie_info: MovieInfo) -> bool:
 
     download_links = []
     for download_row in download_rows:
-        release_text = download_row.find_all(string=re.compile(movie_info.quality + '.+' + movie_info.group, re.IGNORECASE))
+        if 'bad' in download_row['class']:
+            continue
+
+        release_text = download_row.find_all(
+            string=re.compile(movie_info.quality + '.+' + movie_info.group, re.IGNORECASE)
+        )
         if not release_text:
             release_text = download_row.find_all(string=re.compile(movie_info.quality, re.IGNORECASE))
         if release_text or movie_info.episode:
