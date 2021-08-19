@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import urllib
 import zipfile
 
 import requests
@@ -13,7 +14,7 @@ from movie_info_extracter import extract_movie_info
 def download(movie: movie_info.MovieInfo):
     search_html = html_fetcher.fetch_post(
         'https://subscene.com/subtitles/searchbytitle',
-        {'query': movie.title, 'l': ''}
+        {'query': urllib.parse.quote_plus(movie.title), 'l': ''}
     )
     if search_html is None:
         return False
