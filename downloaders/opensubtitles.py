@@ -43,7 +43,7 @@ def download(movie_info: MovieInfo) -> bool:
         return False
 
     download_links = []
-    for download_row in download_rows:
+    for row_index, download_row in enumerate(download_rows):
         if 'bad' in download_row['class']:
             continue
 
@@ -63,7 +63,7 @@ def download(movie_info: MovieInfo) -> bool:
             else:
                 download_links.insert(0, download_link['href'])
         else:
-            print("Did not find a suitable release (quality) or episode")
+            print("Did not find a suitable release (quality) or episode in " + str(row_index))
 
     if download_links:
         print('Download zip from ' + 'https://www.opensubtitles.org' + download_links[0])
