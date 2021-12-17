@@ -28,12 +28,25 @@ def download(movie_info: MovieInfo) -> bool:
 
     if len(download_rows) == 0 and len(search_html.select('#search_results')) == 1:
         # multiple search results
+        result_rows = search_html.select("#search_results .change")
         if movie_info.episode:
             # for episodes search for the episode number among the results
-            result_rows = search_html.select("#search_results .change")
             for result_row in result_rows:
                 if movie_info.episode.lower() in result_row.text.lower():
                     movie_page_link = result_row.find('a', href=re.compile('idmovie'))
+                    search_html = html_fetcher.fetch_get('https://www.opensubtitles.org' + movie_page_link['href'])
+                    if search_html is None:
+                        return False
+                    download_rows = search_html.select('.change.expandable')
+
+        # check if there is an exact match in search results
+        if movie_info.year:
+            print('Searching for "' +
+                  movie_info.title.lower() + ' (' + str(movie_info.year) + ')" exact match in multiple results')
+            for result_row in result_rows:
+                movie_page_link = result_row.find('a', href=re.compile('idmovie'))
+                if movie_info.title.lower() + ' (' + str(movie_info.year) + ')' == movie_page_link.text.lower().replace('\n', ' '):
+                    print('Found exact match in multiple results')
                     search_html = html_fetcher.fetch_get('https://www.opensubtitles.org' + movie_page_link['href'])
                     if search_html is None:
                         return False
@@ -63,7 +76,7 @@ def download(movie_info: MovieInfo) -> bool:
             else:
                 download_links.insert(0, download_link['href'])
         else:
-            print("Did not find a suitable release (quality) or episode in " + str(row_index))
+            print("Did not find a suitable release (quality) or episode in row" + str(row_index))
 
     if download_links:
         print('Download zip from ' + 'https://www.opensubtitles.org' + download_links[0])
