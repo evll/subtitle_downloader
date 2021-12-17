@@ -22,10 +22,14 @@ def download(movie: movie_info.MovieInfo):
     result_links = search_html.select('.exact + ul .title a')
     # XXX for series add a map of season number to textual representation and use it to filter the correct title
     if len(result_links) == 0:
+        print('Found no exact result links, looking for non-exact matches')
         result_links = search_html.find_all("a", text=re.compile(" \\(" + str(movie.year) + "\\)"))
+    else:
+        print('Found ' + str(len(result_links)) + ' exact result links')
 
     for result_link in result_links:
         if movie.year is None or movie.year in result_link.string or str(int(movie.year) - 1) in result_link.string:
+            print('Found a suitable result link: ' + result_link.string)
             time.sleep(3)
             list_html = html_fetcher.fetch_get('https://subscene.com' + result_link['href'])
             if list_html is None:
