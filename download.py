@@ -28,22 +28,28 @@ if not movie_filename:
 
 movie_info = extract_movie_info(movie_filename)
 
+print(movie_info)
+
 downloaded_from_addic7ed = False
 if movie_info.episode:
+    print('Searching on addic7ed')
     downloaded_from_addic7ed = addic7ed.download(movie_info)
 
 if downloaded_from_addic7ed:
     raise SystemExit
 
 if movie_info.episode and ' and ' in movie_info.title:
+    print('Searching on addic7ed')
     downloaded_from_addic7ed = addic7ed.download(movie_info)
 
 if downloaded_from_addic7ed:
     raise SystemExit
 
+print('Searching on opensubtitles')
 downloaded_from_opensubtitles = opensubtitles.download(movie_info)
 if downloaded_from_opensubtitles:
     raise SystemExit
 
+print('Searching on subscene')
 subscene.download(movie_info)
 
