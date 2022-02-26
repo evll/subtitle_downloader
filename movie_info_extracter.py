@@ -28,7 +28,7 @@ def _extract_title_year_from_filename(filename: str) -> tuple:
     """Returns a tuple where the first element is movie title with spaces and the second one is year.
     The year is not available for series, in that case the second value is None.
     """
-    matches = re.match(r'(.+)(2\d{3})', filename)
+    matches = re.match(r'(.+)((2\d{3})|(19\d\d))', filename)
     if matches:
         return _add_single_quotes(matches[1].replace('.', ' ')).strip(), matches[2]
 
